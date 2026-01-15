@@ -1,0 +1,70 @@
+OVERFITTING STRATEGY IMPLEMENTATION
+
+Target Object: Bottle (from bottle_sample.MOV)
+Dataset: 252 annotated frames extracted from the single video.
+Strategy: Overfit the model to achieve near-zero loss on this specific bottle instance.
+
+1. CONFIGURATION
+----------------
+- Epochs: 1000
+- Batch Size: 16 (Optimized for single video overfitting)
+- Learning Rate: 1e-4 (Adam Optimizer)
+- Augmentations: None (Per user request, ensuring pure overfitting)
+- Framework: PyTorch
+
+2. DATA PREPARATION
+-------------------
+The data is extracted into a structured 'bottle_data' directory:
+- bottle_data/images/: Contains 252 JPEG frames.
+- bottle_data/annotations.json: Contains 2D/3D keypoints for all frames.
+
+3. MODEL ARCHITECTURE
+---------------------
+- Backbone: Pretrained ResNet18.
+- Output: 27 units (9 keypoints * 3 coordinates: x, y, depth).
+- Loss Function: Mean Squared Error (MSE), ideal for keypoint regression.
+
+4. TRAINING LOGIC (PYTHON/PYTORCH)
+----------------------------------
+The implementation uses in-memory caching to bypass disk I/O bottlenecks, ensuring the GPUs are saturated with data.
+
+```python
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torchvision import models, transforms
+
+# Core Training Loop
+def train_overfit():
+    # 1. Model Setup
+    model = models.resnet18(pretrained=True)
+    model.fc = nn.Linear(model.fc.in_features, 9 * 3) # 9 keypoints (x,y,depth)
+    model = model.to('cuda') # Optimized for RTX 4090
+
+    # 2. Optimization
+    criterion = nn.MSELoss()
+    optimizer = optim.Adam(model.parameters(), lr=1e-4)
+
+    # 3. Overfitting Loop
+    for epoch in range(1000):
+        model.train()
+        for images, targets in dataloader:
+            images, targets = images.to('cuda'), targets.to('cuda')
+            
+            optimizer.zero_grad()
+            outputs = model(images)
+            loss = criterion(outputs, targets)
+            loss.backward()
+            optimizer.step()
+        
+        if (epoch + 1) % 10 == 0:
+            print(f"Epoch {epoch+1}/1000 - Loss: {loss.item():.6f}")
+
+    torch.save(model.state_dict(), 'bottle_overfit_model.pth')
+```
+
+5. EXECUTION PLAN FOR DUAL RTX 4090
+-----------------------------------
+- Multi-GPU: Use torch.nn.DataParallel(model) to utilize both 4090 cards.
+- Batch Scaling: Increase BATCH_SIZE to 128+ to leverage 48GB total VRAM.
+- Goal: Achieve a Loss < 0.0001 within 1000 epochs.
