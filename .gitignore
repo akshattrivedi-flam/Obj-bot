@@ -1,10 +1,19 @@
-# Byte-compiled / optimized / DLL files
+# Data and Logs
+bottle_data/
+output/
+*.mp4
+*.jpg
+*.pbdata
+
+# Model Checkpoints (intermediate)
+bottle_overfit_model_epoch_*.pth
+*.onnx
+*.onnx.data
+
+# Virtual Environments
+venv_conv/
+
+# System Files
+.DS_Store
 __pycache__/
-*.py[cod]
-*$py.class
-
-# Distribution / packaging
-.Python
-build/
-
-.ipynb_checkpoints
+*.pyc
