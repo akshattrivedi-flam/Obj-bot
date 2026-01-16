@@ -1,5 +1,37 @@
+# Objectron: 3D Object Pose Estimation
 
-<div align="center">
+## Recent Work: Overfitting & Mobile Optimization
+
+This section summarizes the recent implementation of a mobile-ready 3D object pose estimation baseline for the "bottle" category, focusing on fast convergence and high precision.
+
+### 🚀 Key Achievements
+- **Architecture**: Implemented a lightweight **MobileNetV3 Small** backbone, achieving a model size of only **5.95 MB (TFLite)**.
+- **Overfitting Strategy**: Developed a specialized pipeline to overfit on the `bottle_sample.MOV` sequence to verify the baseline's learning capacity.
+- **Precision Fix**: Identified and resolved a critical coordinate scaling bug. By correctly mapping normalized keypoints to pixel coordinates before transformations, we achieved **tight 3D bounding box alignment** (fixing previously collapsed/offset predictions).
+- **Multi-Format Export**: Successfully exported the model to **TorchScript** and **TFLite** formats after resolving complex library and environment conflicts.
+
+### 📊 Model Results
+| Format | File Path | Size | Status |
+| :--- | :--- | :--- | :--- |
+| **TFLite** | [bottle_model.tflite](bottle_model.tflite) | 5.95 MB | Verified |
+| **TorchScript** | [bottle_model_torchscript.pt](bottle_model_torchscript.pt) | 6.20 MB | Verified |
+| **PyTorch** | [bottle_overfit_model.pth](bottle_overfit_model.pth) | 6.00 MB | Verified |
+
+### 🛠️ Tooling & Scripts
+- **Inference & Visualization**:
+    - `visualize_video_tflite.py`: Run TFLite inference and generate an annotated video.
+    - `visualize_video_predictions.py`: Run PyTorch inference and generate an annotated video.
+    - `verify_tflite_model.py`: Quick sanity check for TFLite model inputs/outputs.
+- **Training & Export**:
+    - `train_overfit.py`: Optimized training script with the coordinate scaling fix.
+    - `export_tflite.py`: Clean export path using `ai-edge-torch`.
+    - `prepare_overfit_data.py`: Data extraction and labeling for the overfit sequence.
+
+### 🎞️ Visual Verification
+The final TFLite model demonstrates extremely stable and accurate 3D wireframe tracking.
+- **Result Video**: `output/overfit_results_tflite.mp4`
+
+---
 
 # Objectron Dataset
 
